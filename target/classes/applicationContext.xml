@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	http://www.springframework.org/schema/jee
+	http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd"
+	default-autowire="byName">
+	<!-- 为简化PropertyPlaceholderConfigurer的使用，Spring提供了<context:property-placeholder/>元素。启用它后，便不用配置PropertyPlaceholderConfigurer对象了 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> -->
+	<!-- <property name="locations"> -->
+	<!-- <list> -->
+	<!-- <value>/jdbc.properties</value> -->
+	<!-- </list> -->
+	<!-- </property> -->
+	<!-- </bean> -->
+
+	<context:annotation-config />
+
+	<!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
+	<context:component-scan base-package="com.lanux" />
+
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 连接池支持的最大连接数 -->
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<!-- 连接池中最多可空闲maxIdle个连接 -->
+		<property name="maxIdle" value="${jdbc.maxIdle}" />
+		<!-- initialSize 初始化连接数目 -->
+		<property name="initialSize" value="${jdbc.initialSize}" />
+		<!-- 连接池中连接用完时,新的请求等待时间,毫秒 -->
+		<property name="maxWait" value="${jdbc.maxWait}" />
+		<!-- timeBetweenEvictionRunsMillis和minEvictableIdleTimeMillis一起使用,每 timeBetweenEvictionRunsMillis毫秒秒检查一次连接池中空闲的连接,把空闲时间超过 minEvictableIdleTimeMillis毫秒的连接断开,直到连接池中的连接数到minIdle为止 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+		<property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}" />
+	</bean>
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" p:dataSource-ref="dataSource" />
+
+	<aop:aspectj-autoproxy />
+
+	<!-- 通过AOP配置提供事务增强，让lanux包下方法拥有事务 -->
+	<!-- <aop:config> -->
+	<!-- <aop:pointcut id="serviceMethod" expression="execution(* com.lanux..*(..))" /> -->
+	<!-- <aop:advisor pointcut-ref="serviceMethod" advice-ref="txAdvice" /> -->
+	<!-- </aop:config> -->
+	<!-- <tx:advice id="txAdvice" transaction-manager="hibernateTransactionManager"> -->
+	<!-- <tx:attributes> -->
+	<!-- <tx:method name="save*" propagation="REQUIRED" /> -->
+	<!-- <tx:method name="add*" propagation="REQUIRED" /> -->
+	<!-- <tx:method name="get*" propagation="REQUIRED" read-only="true" /> -->
+	<!-- </tx:attributes> -->
+	<!-- </tx:advice> -->
+
+	<!-- 配置事务管理器 -->
+	<!-- HibernateTransactionManager能够保证 jdbctemplate所获得con与hibernate获得的con在同一个事务中， -->
+	<!-- 所以使用HibernateTransactionManager进行事务管理能够保证在程序中hibernateTemplate 和jdbcTemplate执行的方法处于同一事务。 -->
+	<!-- DataSourceTransactionManager 却不行，他只管理从dataSource数据源获得的con的事务，无法管理hibernate的Session中con的事务。 -->
+	<!-- 具体请查看HibernateTransactionManager.doGetTransaction();方法和DataSourceTransactionManager .doGetTransaction()方法。 -->
+	<!-- <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" p:dataSource-ref="dataSource" /> -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="packagesToScan" value="com.lanux.pojo.*"></property>
+		<!-- <property name="namingStrategy"> -->
+		<!-- 表名称的命名策略,可自定义 -->
+		<!-- <bean class="org.hibernate.cfg.ImprovedNamingStrategy" /> -->
+		<!-- </property> -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<!-- <prop key="javax.persistence.validation.mode">none</prop> -->
+				<!--<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop> -->
+				<!--<prop key="hibernate.cache.provider_configuration_file_resource_path">ehcache.xml</prop> -->
+			</props>
+		</property>
+	</bean>
+	<bean id="hibernateTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<!-- 使用基于注解事务 -->
+	<!-- 在逻辑层方法中添加注解如:@Transactional(readOnly = true, propagation=Propagation.REQUIRED) -->
+	<tx:annotation-driven transaction-manager="hibernateTransactionManager" />
+
+	<mvc:interceptors>
+		<!-- 地点转变过滤器,默认映射所有 -->
+		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
+		<mvc:interceptor>
+			<mvc:mapping path="/*" />
+			<bean class="com.lanux.common.LanuxInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"> -->
+	<!-- <property name="corePoolSize" value="0" /> -->
+	<!-- <property name="maxPoolSize" value="100" /> -->
+	<!-- </bean> -->
+
+	<!-- 国际化文件 <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"> <property name="basename" value="/msg/messages"></property> <property name="useCodeAsDefaultMessage" 
+		value="true" /> </bean> -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="messages" />
+		<property name="useCodeAsDefaultMessage" value="true" />
+	</bean>
+	<!-- Saves a locale change using a session -->
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
+
+</beans>
