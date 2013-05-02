@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+/**
+ * 可以使用@ControllerAdvice标签
+ * @author Lanux
+ *
+ */
 public class BaseController {
 	protected Logger logger = Logger.getLogger(super.getClass());
 
