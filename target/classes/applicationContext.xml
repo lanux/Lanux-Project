@@ -30,25 +30,28 @@
 	<!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
 	<context:component-scan base-package="com.lanux" />
 
+	<!-- Proxool是一种Java数据库连接池技术,目前是和DBCP以及C3P0一起，最为常见的三种JDBC连接池技术。 -->
+	<!-- 日前，Hibernate官方宣布由于Bug太多不再支持DBCP，而推荐使用 Proxool或C3P0。 -->
 	<!-- 配置数据源 -->
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-		<property name="driverClassName" value="${jdbc.driverClassName}" />
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
 		<property name="url" value="${jdbc.url}" />
-		<property name="username" value="${jdbc.username}" />
+		<property name="username" value="${jdbc.user}" />
 		<property name="password" value="${jdbc.password}" />
-		<!-- 连接池支持的最大连接数 -->
-		<property name="maxActive" value="${jdbc.maxActive}" />
-		<!-- 连接池中最多可空闲maxIdle个连接 -->
-		<property name="maxIdle" value="${jdbc.maxIdle}" />
-		<!-- initialSize 初始化连接数目 -->
-		<property name="initialSize" value="${jdbc.initialSize}" />
-		<!-- 连接池中连接用完时,新的请求等待时间,毫秒 -->
-		<property name="maxWait" value="${jdbc.maxWait}" />
-		<!-- timeBetweenEvictionRunsMillis和minEvictableIdleTimeMillis一起使用,每 timeBetweenEvictionRunsMillis毫秒秒检查一次连接池中空闲的连接,把空闲时间超过 minEvictableIdleTimeMillis毫秒的连接断开,直到连接池中的连接数到minIdle为止 -->
-		<property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
-		<property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}" />
+		<property name="filters" value="stat" />
+		<property name="maxActive" value="20" />
+		<property name="initialSize" value="1" />
+		<property name="maxWait" value="60000" />
+		<property name="minIdle" value="1" />
+		<property name="timeBetweenEvictionRunsMillis" value="3000" />
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
 	</bean>
-
+	
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" p:dataSource-ref="dataSource" />
 
 	<aop:aspectj-autoproxy />

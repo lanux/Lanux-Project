@@ -26,13 +26,13 @@
    public static <T> T getBean(String name)
      throws BeansException
    {
-     return applicationContext.getBean(name);
+     return (T) applicationContext.getBean(name);
    }
  
    public static <T> T getBean(String name, Class<?> requiredType)
      throws BeansException
    {
-     return applicationContext.getBean(name, requiredType);
+     return (T) applicationContext.getBean(name, requiredType);
    }
  
    public static boolean containsBean(String name)

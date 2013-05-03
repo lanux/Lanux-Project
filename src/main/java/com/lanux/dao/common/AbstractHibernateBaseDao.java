@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.catalina.Session;
 import org.apache.log4j.Logger;
+import org.hibernate.HibernateException;
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -55,21 +57,21 @@ public abstract class AbstractHibernateBaseDao<T, K extends Serializable> extend
 
 	public boolean add(T t) {
 		try {
-			if (getHibernateTemplate().save(t) == null)
-				break label18;
-			return true;
+			if (getHibernateTemplate().save(t) != null)
+				return true;
 		} catch (DataAccessException e) {
 			e.printStackTrace();
 		}
-		label18: return false;
+		return false;
 	}
 
-	public List<T> findBySql(String sql) {
+	@SuppressWarnings("unchecked")
+	public List<T> findBySql(final String sql) {
 		List<T> list = null;
 		try {
-			list = getHibernateTemplate().executeFind(new HibernateCallback(sql) {
-				public List<T> doInHibernate(Session session) throws HibernateException, SQLException {
-					SQLQuery query = session.createSQLQuery(this.val$sql);
+			list = getHibernateTemplate().executeFind(new HibernateCallback<List<T>>() {
+				public List<T> doInHibernate(final Session session) throws HibernateException, SQLException {
+					SQLQuery query = session.createSQLQuery(sql);
 					return query.list();
 				}
 			});
@@ -79,6 +81,7 @@ public abstract class AbstractHibernateBaseDao<T, K extends Serializable> extend
 		return list;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<T> findByHql(String hql) {
 		List<T> list = null;
 		try {
@@ -89,12 +92,12 @@ public abstract class AbstractHibernateBaseDao<T, K extends Serializable> extend
 		return list;
 	}
 
-	public boolean execute(String sql) {
+	public boolean execute(final String sql) {
 		boolean res = false;
 		try {
-			Integer c = (Integer) getHibernateTemplate().execute(new HibernateCallback(sql) {
+			Integer c = (Integer) getHibernateTemplate().execute(new HibernateCallback<Integer>() {
 				public Integer doInHibernate(Session session) throws HibernateException, SQLException {
-					return Integer.valueOf(session.createQuery(this.val$sql).executeUpdate());
+					return Integer.valueOf(session.createQuery(sql).executeUpdate());
 				}
 			});
 			if (c != null)
@@ -117,7 +120,7 @@ public abstract class AbstractHibernateBaseDao<T, K extends Serializable> extend
 	}
 
 	public List<T> getAll() {
-		List list = null;
+		List<T> list = null;
 		try {
 			list = getHibernateTemplate().loadAll(getEntityClass());
 		} catch (Exception e) {

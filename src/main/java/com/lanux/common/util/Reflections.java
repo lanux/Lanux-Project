@@ -1,16 +1,16 @@
  package com.lanux.common.util;
  
  import java.lang.reflect.Field;
- import java.lang.reflect.InvocationTargetException;
- import java.lang.reflect.Method;
- import java.lang.reflect.Modifier;
- import java.lang.reflect.ParameterizedType;
- import java.lang.reflect.Type;
- import org.apache.commons.lang3.StringUtils;
- import org.apache.commons.lang3.Validate;
- import org.slf4j.Logger;
- import org.slf4j.LoggerFactory;
- import org.springframework.util.Assert;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
  
  public class Reflections
  {
@@ -95,7 +95,7 @@
    {
      Validate.notNull(obj, "object can't be null", new Object[0]);
      Validate.notBlank(fieldName, "fieldName can't be blank", new Object[0]);
-     for (Class superClass = obj.getClass(); superClass != Object.class; superClass = superClass.getSuperclass())
+     for (Class<?> superClass = obj.getClass(); superClass != Object.class; superClass = superClass.getSuperclass())
        try {
          Field field = superClass.getDeclaredField(fieldName);
          makeAccessible(field);
@@ -112,7 +112,7 @@
      Validate.notNull(obj, "object can't be null", new Object[0]);
      Validate.notBlank(methodName, "methodName can't be blank", new Object[0]);
  
-     for (Class searchType = obj.getClass(); searchType != Object.class; searchType = searchType.getSuperclass())
+     for (Class<?> searchType = obj.getClass(); searchType != Object.class; searchType = searchType.getSuperclass())
        try {
          Method method = searchType.getDeclaredMethod(methodName, parameterTypes);
          makeAccessible(method);
@@ -129,7 +129,7 @@
      Validate.notNull(obj, "object can't be null", new Object[0]);
      Validate.notBlank(methodName, "methodName can't be blank", new Object[0]);
  
-     for (Class searchType = obj.getClass(); searchType != Object.class; searchType = searchType.getSuperclass()) {
+     for (Class<?> searchType = obj.getClass(); searchType != Object.class; searchType = searchType.getSuperclass()) {
        Method[] methods = searchType.getDeclaredMethods();
        for (Method method : methods) {
          if (method.getName().equals(methodName)) {
@@ -155,16 +155,16 @@
      field.setAccessible(true);
    }
  
-   public static <T> Class<T> getClassGenricType(Class clazz)
+   public static <T> Class<T> getClassGenricType(Class<?> clazz)
    {
-     return getClassGenricType(clazz, 0);
+     return (Class<T>) getClassGenricType(clazz, 0);
    }
  
-   public static Class getClassGenricType(Class clazz, int index)
+   public static Class<?> getClassGenricType(Class<?> clazz, int index)
    {
      Type genType = clazz.getGenericSuperclass();
  
-     if (!genType instanceof ParameterizedType) {
+     if (!(genType instanceof ParameterizedType)) {
        logger.warn(clazz.getSimpleName() + "'s superclass not ParameterizedType");
        return Object.class;
      }
@@ -176,19 +176,19 @@
          params.length);
        return Object.class;
      }
-     if (!params[index] instanceof Class) {
+     if (!(params[index] instanceof Class)) {
        logger.warn(clazz.getSimpleName() + " not set the actual class on superclass generic parameter");
        return Object.class;
      }
  
-     return (Class)params[index];
+     return (Class<?>)params[index];
    }
  
    public static Class<?> getUserClass(Object instance) {
      Assert.notNull(instance, "Instance must not be null");
-     Class clazz = instance.getClass();
+     Class<?> clazz = instance.getClass();
      if ((clazz != null) && (clazz.getName().contains("$$"))) {
-       Class superClass = clazz.getSuperclass();
+    	 Class<?> superClass = clazz.getSuperclass();
        if ((superClass != null) && (!Object.class.equals(superClass))) {
          return superClass;
        }
