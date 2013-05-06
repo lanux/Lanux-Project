@@ -3,21 +3,21 @@ package com.lanux.dao.common;
 import java.io.Serializable;
 import java.util.List;
 
-public abstract interface IBaseDao<T, K extends Serializable>
-{
-  public abstract T get(K paramK);
+public interface IBaseDao<T, PK extends Serializable> {
+	public T get(PK paramK);
 
-  public abstract List<T> getAll();
+	public List<T> getAll();
 
-  public abstract boolean delete(K paramK);
+	public void delete(PK paramK);
 
-  public abstract boolean update(T paramT);
+	public void update(T paramT);
 
-  public abstract boolean add(T paramT);
+	public boolean add(T paramT);
 
-  public abstract List<T> findBySql(String paramString);
+	public List<T> findBySql(String paramString);
 
-  public abstract List<T> findByHql(String paramString);
+	public List<T> findByHql(String paramString);
 
-  public abstract boolean execute(String paramString);
+	public boolean execute(String paramString);
+	
 }

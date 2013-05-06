@@ -35,7 +35,7 @@
 	<!-- 配置数据源 -->
 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
 		<property name="url" value="${jdbc.url}" />
-		<property name="username" value="${jdbc.user}" />
+		<property name="username" value="${jdbc.username}" />
 		<property name="password" value="${jdbc.password}" />
 		<property name="filters" value="stat" />
 		<property name="maxActive" value="20" />
@@ -48,8 +48,6 @@
 		<property name="testWhileIdle" value="true" />
 		<property name="testOnBorrow" value="false" />
 		<property name="testOnReturn" value="false" />
-		<property name="poolPreparedStatements" value="true" />
-		<property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
 	</bean>
 	
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" p:dataSource-ref="dataSource" />
@@ -75,7 +73,7 @@
 	<!-- DataSourceTransactionManager 却不行，他只管理从dataSource数据源获得的con的事务，无法管理hibernate的Session中con的事务。 -->
 	<!-- 具体请查看HibernateTransactionManager.doGetTransaction();方法和DataSourceTransactionManager .doGetTransaction()方法。 -->
 	<!-- <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" p:dataSource-ref="dataSource" /> -->
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource"></property>
 		<property name="packagesToScan" value="com.lanux.pojo.*"></property>
 		<!-- <property name="namingStrategy"> -->
@@ -94,7 +92,7 @@
 			</props>
 		</property>
 	</bean>
-	<bean id="hibernateTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+	<bean id="hibernateTransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 	<!-- 使用基于注解事务 -->

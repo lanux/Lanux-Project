@@ -33,26 +33,22 @@ public abstract class AbstractHibernateBaseDao<T, K extends Serializable> extend
 		return null;
 	}
 
-	public boolean delete(K id) {
+	public void delete(K id) {
 		try {
 			Object entity = get(id);
 			if (entity != null)
 				getHibernateTemplate().delete(entity);
 		} catch (DataAccessException e) {
 			e.printStackTrace();
-			return false;
 		}
-		return true;
 	}
 
-	public boolean update(T t) {
+	public void update(T t) {
 		try {
 			getHibernateTemplate().update(t);
 		} catch (DataAccessException e) {
 			e.printStackTrace();
-			return false;
 		}
-		return true;
 	}
 
 	public boolean add(T t) {
